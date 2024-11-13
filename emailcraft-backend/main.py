@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from database import SessionLocal, engine, Base
-from models import User
+from models import User, EmailHistory
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -128,6 +128,35 @@ def get_db():
 
 # Dependency to get the current user from the token
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """
+    This function is a dependency that extracts and validates the JWT token from the request.
+    It decodes the token to obtain the user information (e.g., username) and ensures that 
+    the user exists in the database. It is used to authenticate and authorize users for 
+    protected routes.
+
+    Steps:
+    1. The function attempts to decode the JWT token using the SECRET_KEY and ALGORITHM 
+       defined in the application settings. 
+       - The token should contain a `sub` field representing the username of the authenticated user.
+    2. If the token is invalid or expired, or if the `sub` field is missing, an HTTP 401 
+       Unauthorized exception is raised with the message "Could not validate credentials".
+    3. The function queries the database to check if the user with the decoded username exists.
+       - If no matching user is found, an HTTP 401 Unauthorized exception is raised.
+    4. If the user is valid and exists in the database, the `user` object is returned to the calling function.
+    
+    Parameters:
+        token (str): The JWT token that is passed with the request (usually in the Authorization header as a Bearer token).
+        db (Session): The database session used to query the user from the database.
+
+    Returns:
+        User: The authenticated user object retrieved from the database, which contains user-related information.
+
+    Raises:
+        HTTPException: 
+            - If the JWT token is invalid, expired, or cannot be decoded, a 401 Unauthorized error is raised.
+            - If the username is missing from the decoded token, a 401 Unauthorized error is raised.
+            - If the user does not exist in the database, a 401 Unauthorized error is raised.
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -148,8 +177,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 # Endpoint for generating an email based on subject and tone
 @app.post("/generate-email")
-def generate_email(request: EmailRequest):
-    """API endpoint to generate email based on subject and tone."""
+def generate_email(request: EmailRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Generate a formal English email based on the user's subject and tone.
+    
+    - Retrieves the input 'subject' and 'tone' from the request.
+    - Calls the Hugging Face API to translate the subject into English.
+    - Reformats the translated text into a formal email with the specified tone.
+    - Stores the generated email and prompt in the EmailHistory table, linked to the current user.
+
+    Parameters:
+        request (EmailRequest): The input data containing the subject and tone.
+        current_user (User): The currently authenticated user, provided by the `get_current_user` dependency.
+        db (Session): The database session, provided by the `get_db` dependency.
+
+    Returns:
+        dict: A JSON response containing the original subject, tone, and generated email body.
+    """
     if len(request.subject) > 500:
             raise HTTPException(status_code=400,
                                 detail="Subject text is too long. Please shorten it for optimal email generation.")
@@ -157,13 +201,66 @@ def generate_email(request: EmailRequest):
     english_output = generate_english_from_multilingual(request.subject)
     email_body = generate_formal_email_from_english(english_output, request.tone)
     index = email_body.index("Subject:") # starting index of the text
-
     email_body = email_body[index:]
+
+    # Save email history in database
+    email_entry = EmailHistory(
+        user_id = current_user.id,
+        prompt = request.subject,
+        generated_email = email_body,
+    )
+    db.add(email_entry)
+    db.commit()
+
     return {"subject": request.subject, "tone": request.tone, "email_body": email_body}
+
+# Endpoint for retrieving the email generation history
+@app.get("/email-history")
+def get_email_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Retrieve the email generation history for the currently authenticated user.
+    
+    - Queries the EmailHistory table to find all past email generations linked to the current user.
+    - Formats each entry with the original prompt, generated email content, and timestamp.
+    - Returns the user's history as a list of generated email records for display in the sidebar.
+
+    Parameters:
+        current_user (User): The currently authenticated user, provided by the `get_current_user` dependency.
+        db (Session): The database session, provided by the `get_db` dependency.
+
+    Returns:
+        list: A list of dictionaries, each containing a prompt, generated email, and timestamp of generation.
+    """
+    # Query the email history for the current user
+    history = db.query(EmailHistory).filter(EmailHistory.user_id == current_user.id).all()
+    
+    # Format the response data
+    return [{"prompt": entry.prompt, "generated_email": entry.generated_email, "timestamp": entry.timestamp} for entry in history]
+
 
 # Endpoint for registering a new user
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user: UserRegister, db: Session = Depends(get_db)):
+    """
+    This endpoint allows a new user to register by providing a username, password, 
+    and password confirmation (verify_password). 
+
+    Steps:
+    1. Check if the provided username already exists in the database.
+       - If the username is already taken, an HTTP 400 error is raised with the message "Username already registered".
+    2. Ensure the provided password and verification password match.
+       - If they do not match, an HTTP 400 error is raised with the message "Passwords do not match".
+    3. Hash the user's password using a secure hashing function.
+    4. Create a new user in the database with the given username and hashed password.
+    5. Return a success message upon successful registration with HTTP status code 201 (Created).
+
+    Parameters:
+        user (UserRegister): The data sent by the user during registration, including username, password, and password verification.
+        db (Session): The database session dependency used to interact with the database.
+
+    Returns:
+        dict: A JSON response indicating successful user registration with the message "User registered successfully".
+    """
     # Check if the username already exists
     existing_user = db.query(User).filter(User.username == user.username).first()
     if existing_user:
@@ -190,6 +287,32 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
 
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    This endpoint allows a user to log in by providing their username and password. 
+    It checks the provided credentials, and if they are correct, returns a JWT token.
+
+    Steps:
+    1. Retrieve the user from the database by their username.
+       - If no user is found or the password doesn't match the stored hashed password, 
+         an HTTP 401 error is raised with the message "Incorrect username or password".
+    2. If credentials are valid, generate a JWT (JSON Web Token) for the user.
+       - The token contains the username as the subject ("sub") and is valid for a specific duration 
+         (defined by `ACCESS_TOKEN_EXPIRE_MINUTES`).
+    3. Return the generated JWT token and the token type ("bearer") in the response.
+
+    Parameters:
+        form_data (OAuth2PasswordRequestForm): The form data containing the username and password provided by the user.
+        db (Session): The database session used to query the user data.
+
+    Returns:
+        dict: A JSON response containing the generated access token and the token type ("bearer").
+        - The response will look like: 
+            {"access_token": "<JWT_TOKEN>", "token_type": "bearer"}.
+
+    Raises:
+        HTTPException: 
+            - If the username does not exist or the password is incorrect, an HTTP 401 Unauthorized error is raised.
+    """
     # Retrieve the user from the database by username
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
@@ -208,6 +331,28 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 # Example of a protected route
 @app.get("/protected-route")
 def protected_route(current_user: User = Depends(get_current_user)):
+    """
+    This endpoint represents a protected route that requires user authentication. 
+    It ensures that only authenticated users, who possess a valid JWT token, can access it.
+
+    Steps:
+    1. The `get_current_user` dependency is called to extract the current user based on the provided JWT token.
+       - If the user is authenticated (i.e., the token is valid and the user exists), 
+         the `current_user` object is returned containing the user's data (such as their username).
+    2. If the user is authenticated, a personalized message is returned that includes the username of the authenticated user.
+
+    Parameters:
+        current_user (User): The current authenticated user retrieved from the JWT token, injected by the `get_current_user` dependency.
+
+    Returns:
+        dict: A JSON response containing a personalized message for the authenticated user.
+        - The response will look like: 
+            {"message": "Hello, <username>! You have access to this protected route."}.
+        
+    Raises:
+        HTTPException:
+            - If the user is not authenticated (invalid or missing token), an HTTP 401 Unauthorized error will be raised by the `get_current_user` dependency.
+    """
     return {"message": f"Hello, {current_user.username}! You have access to this protected route."}
 
 # Run the server
