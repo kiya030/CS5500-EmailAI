@@ -1,5 +1,8 @@
 // src/components/EmailForm.js
 import React, { useState } from 'react';
+
+// Import styles
+import '../styles/common.css';
 import '../styles/Form.css';
 
 const EmailForm = () => {
