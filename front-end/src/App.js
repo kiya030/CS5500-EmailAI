@@ -1,32 +1,27 @@
 // src/App.js
-import React from 'react';
-import Login from './components/Login';
-import EmailForm from './components/EmailForm';
-import './styles/Form.css'
+import React, { useState } from "react"; // Import React and useState hook
+import Login from "./components/Login"; // Import Login component
+import EmailForm from "./components/EmailForm"; // Import EmailForm component
 
-function App() {
+const App = () => {
+  // Track if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Function to handle the login action
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
+
   return (
-    <div className="App">
-      <header>
-        <h1>Welcome to My App</h1>
-        <p>Generate emails or log in to access more features!</p>
-      </header>
-      <main>
-        <section>
-          <h2>Login Section</h2>
-          <Login />
-        </section>
-
-        <section>
-          <h2>Email Generator</h2>
-          <EmailForm />
-        </section>
-      </main>
-      <footer>
-        <p>&copy; 2024 My App. All rights reserved.</p>
-      </footer>
+    <div>
+      {/* Conditionally render based on isLoggedIn */}
+      {isLoggedIn ? (
+        <EmailForm />
+      ) : (
+        <Login onLogin={handleLogin} />
+      )}
     </div>
   );
-}
+};
 
 export default App;

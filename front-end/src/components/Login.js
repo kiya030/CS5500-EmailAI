@@ -5,20 +5,21 @@ import React, { useState } from 'react';
 import '../styles/common.css';
 import '../styles/Form.css';
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [response, setResponse] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+const Login = ({ onLogin }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [response, setResponse] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
     // Handle form submission
-    const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     // Define the API endpoint and request data
     const apiEndpoint = 'http://127.0.0.1:8000/login';
     const requestData = { email, password };
+
 
     // Clear the previous response before new submission
     setResponse(null);
@@ -34,6 +35,11 @@ const Login = () => {
             console.log("Login response:", data);
             setResponse(data.message || "Login successful!");
             setIsLoading(false);
+
+            // Call onLogin if the login is successful
+            if (data.success) {
+              onLogin();
+            }
         })
         .catch((error) => {
             console.error("Login error:", error);
@@ -44,6 +50,10 @@ const Login = () => {
 
     return (
         <div className="login-page">
+          <div className="welcome-message">
+            <h1>Welcome to EmailAI</h1>
+          </div>
+          
           <form className="email-form" onSubmit={handleSubmit}>
             <h2>Login</h2>
             <div className="form-group">
