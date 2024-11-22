@@ -32,8 +32,7 @@ app = FastAPI()
 # Password hashing context for securely storing user passwords
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Create database tables based on SQLAlchemy models
-Base.metadata.create_all(bind=engine)
+
 
 # Add CORS middleware
 app.add_middleware(
@@ -359,4 +358,6 @@ def protected_route(current_user: User = Depends(get_current_user)):
 if __name__ == "__main__":
     import uvicorn
     # uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # Create database tables based on SQLAlchemy models
+    Base.metadata.create_all(bind=engine)
     uvicorn.run("main:app",reload=True)
