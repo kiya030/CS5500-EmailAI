@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 
 // Import styles
-import '../styles/common.css';
+import '../styles/Common.css';
 import '../styles/Form.css';
 
 const EmailForm = () => {
