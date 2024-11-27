@@ -2,7 +2,7 @@ import React, { useState } from "react"; // Import useState
 import { Link } from "react-router-dom"; // Import Link for navigation
 
 // Import styles
-import '../styles/common.css';
+import '../styles/Common.css';
 import '../styles/Form.css';
 
 const Signup = ({ onSignup }) => {
