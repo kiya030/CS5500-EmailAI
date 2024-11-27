@@ -43,3 +43,12 @@
 .submit-button:hover {
   background-color: #22222b;
 }
+
+.signup-page {
+  text-align: center;
+}
+
+.welcome-message p {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
