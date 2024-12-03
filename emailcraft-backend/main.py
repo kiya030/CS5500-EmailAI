@@ -12,6 +12,9 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+# Initialize database tables
+Base.metadata.create_all(bind=engine)
+
 # Load environment variables (e.g., Hugging Face API token) from .env file
 load_dotenv()
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")

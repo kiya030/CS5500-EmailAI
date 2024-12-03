@@ -41,11 +41,11 @@ const EmailForm = () => {
         setIsLoading(false);
       });
   };
- 
+
   return (
     <div className="email-generator">
       <form className="email-form" onSubmit={handleSubmit}>
-        
+
         <div className="form-group">
           <label htmlFor="subject">Subject:</label>
           <textarea
