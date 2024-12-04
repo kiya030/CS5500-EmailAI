@@ -1,44 +1,46 @@
-// src/components/Signup.js
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import "../styles/Common.css";
-import "../styles/Form.css";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import '../styles/Common.css';
+import '../styles/Form.css';
 
 const Signup = ({ onSignup }) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted:", { name, email, password }); // Debugging log
     setIsLoading(true);
 
-    fetch("http://127.0.0.1:8000/signup", {
-      method: "POST",
+    // Corrected API endpoint
+    const apiEndpoint = 'http://127.0.0.1:8000/register';
+
+    // Send data to the API
+    fetch(apiEndpoint, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, email, password }), // No token required
+      body: JSON.stringify({ name, email, password }),
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Signup failed");
-        }
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        console.log("Signup response:", data); // Debugging log
-        setResponse(data.message || "Signup successful! Please log in.");
+        console.log('Signup response:', data);
+
+        if (data.success) {
+          setResponse('Signup successful! Please log in.');
+          onSignup();
+        } else {
+          setResponse(data.message || 'Signup failed. Please try again.');
+        }
         setIsLoading(false);
-        if (data.success) onSignup(); // Call onSignup if the signup is successful
       })
       .catch((error) => {
-        console.error("Signup error:", error); // Debugging log
-        setResponse("An error occurred. Please try again.");
+        console.error('Signup error:', error);
+        setResponse('An error occurred. Please try again.');
         setIsLoading(false);
       });
   };
@@ -89,7 +91,7 @@ const Signup = ({ onSignup }) => {
           </div>
 
           <button type="submit" className="submit-button" disabled={isLoading}>
-            {isLoading ? "Signing up..." : "Sign Up"}
+            {isLoading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
@@ -106,6 +108,10 @@ const Signup = ({ onSignup }) => {
       </div>
     </div>
   );
+};
+
+Signup.defaultProps = {
+  onSignup: () => console.log('Default onSignup function called'),
 };
 
 export default Signup;

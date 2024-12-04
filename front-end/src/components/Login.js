@@ -103,4 +103,8 @@ const Login = ({ onLogin }) => {
   );
 };
 
+Login.defaultProps = {
+  onLogin: () => console.log('Default onLogin function called'),
+};
+
 export default Login;
