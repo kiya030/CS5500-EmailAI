@@ -3,8 +3,8 @@ body {
   background-color: #f4e1d2;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Changed to flex-start for better visibility */
-  padding: 20px; /* Added padding for spacing */
+  align-items: flex-start;
+  padding: 20px;
   min-height: 100vh;
   margin: 0;
 }
@@ -12,27 +12,18 @@ body {
 .container {
   max-width: 600px;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
-  color: #000; /* Ensure text is visible */
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-h1 {
-  margin-bottom: 20px;
-  color: #333;
-  text-align: center;
-}
-
+h1,
 h2 {
   margin-bottom: 20px;
   color: #333;
   text-align: center;
-}
-
-.form-group {
-  margin-bottom: 15px;
 }
 
 input,
@@ -45,6 +36,8 @@ select {
   border-radius: 4px;
   box-sizing: border-box;
   transition: all 0.3s ease;
+  margin-bottom: 15px;
+  /* Added spacing between inputs */
 }
 
 input:focus,
@@ -59,16 +52,18 @@ select:focus {
   margin-top: 20px;
   padding: 15px;
   border-radius: 5px;
-  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+  background-color: rgba(255, 255, 255, 0.9);
   color: #404155;
   font-size: 16px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   white-space: pre-wrap;
+  overflow-y: auto;
+  max-height: 500px;
 }
 
 .submit-button {
   width: 100%;
-  padding: 12px;
+  padding: 10px 0;
   background-color: #59585b;
   color: white;
   border: none;
@@ -81,20 +76,4 @@ select:focus {
 
 .submit-button:hover {
   background-color: #22222b;
-}
-
-.container {
-  border: 2px solid red; /* Debugging border */
-}
-
-.form-group {
-  border: 1px solid green; /* Debugging border */
-}
-
-.email-form {
-  background-color: rgba(0, 255, 0, 0.2); /* Debugging background */
-}
-
-.response-container {
-  border: 1px solid blue; /* Debugging border */
 }

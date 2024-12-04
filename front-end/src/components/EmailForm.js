@@ -1,4 +1,3 @@
-// src/components/EmailForm.js
 import React, { useState } from 'react';
 
 // Import styles
@@ -11,33 +10,40 @@ const EmailForm = () => {
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Define the API endpoint and request data
+    if (!subject || !tone) {
+      setResponse('Please provide both subject and tone.');
+      setIsLoading(false);
+      return;
+    }
+
     const apiEndpoint = 'http://127.0.0.1:8000/generate-email';
     const requestData = { subject, tone };
 
-    // Clear the previous response before new submission
     setResponse(null);
 
-    // Send data to the API
     fetch(apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestData),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP Error: ${res.status}`);
+        }
+        return res.json();
+      })
       .then((data) => {
-        console.log("API response:", data);
-        setResponse(data.email_body); // Display generated email or fallback message
+        console.log('API response:', data);
+        setResponse(data.email_body || 'No email generated. Try again.');
         setIsLoading(false);
       })
       .catch((error) => {
-        console.error("API error:", error);
-        setResponse("An error occurred. Please try again.");
+        console.error('API error:', error.message);
+        setResponse('An error occurred. Please try again.');
         setIsLoading(false);
       });
   };
@@ -45,7 +51,6 @@ const EmailForm = () => {
   return (
     <div className="email-generator">
       <form className="email-form" onSubmit={handleSubmit}>
-
         <div className="form-group">
           <label htmlFor="subject">Subject:</label>
           <textarea
@@ -54,7 +59,7 @@ const EmailForm = () => {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Enter email subject"
-            rows="3" // Adjust number of rows for more space
+            rows="3"
             required
           />
         </div>
@@ -81,7 +86,7 @@ const EmailForm = () => {
         </div>
 
         <button type="submit" className="submit-button" disabled={isLoading}>
-          {isLoading ? "Generating..." : "Generate"}
+          {isLoading ? 'Generating...' : 'Generate'}
         </button>
       </form>
 

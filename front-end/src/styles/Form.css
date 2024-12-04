@@ -1,21 +1,9 @@
-/* styles/Form.css */
-/* Add only component-specific or unique styles here */
-
 .email-generator {
   padding-top: 80px;
 }
 
 .response-container {
   margin-top: 20px;
-}
-
-.response-container h3 {
-  margin-bottom: 10px;
-  color: #404155;
-  font-size: 1.2em;
-}
-
-.response-content {
   padding: 15px;
   border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.9);
@@ -27,6 +15,12 @@
   max-height: 500px;
 }
 
+.response-container h3 {
+  margin-bottom: 10px;
+  color: #404155;
+  font-size: 1.2em;
+}
+
 .submit-button {
   width: 100%;
   padding: 10px 0;
@@ -34,7 +28,7 @@
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 16px; 
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;
