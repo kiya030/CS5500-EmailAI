@@ -1,12 +1,93 @@
 /* styles/Form.css */
 /* Add only component-specific or unique styles here */
 
-.email-generator {
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+
+h1 {
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 20px; 
+  color: #000000;
+}
+
+.email-body {
+  white-space: pre-wrap; /* Preserves new lines and spaces */
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+  margin-top: 10px;
+}
+
+.side-panel {
+  position: fixed; /* Fix the panel to the left */
+  top: 0;
+  left: 0;
+  width: 25%; /* Allocate 25% width to the side panel */
+  max-width: 300px;
+  height: 100%; /* Full screen height */
+  background-color: #d6c1b1;
+  border-right: 1px solid #ccc;
+  padding: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; /* Ensure scrollability for longer history */
+  max-height: 100vh;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.side-panel h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.side-panel ul {
+  list-style: none;
+  padding: 0;
+}
+
+.side-panel li {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 5px;
+  background-color: #ffffff;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+  color: #404155;
+}
+
+.side-panel li strong {
+  display: block;
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.side-panel li p {
+  margin: 0;
+  font-size: 0.9em;
+  color: #59585b;
+}
+
+.email-generator-container {
+  display: flex;
+  flex-direction: row; /* Ensure side panel and main panel are side by side */
+  gap: 20px; /* Add spacing between panels */
+  height: 100vh;
+}
+
+.main-panel {
   padding-top: 80px;
+  width: 80%; /* Allocate space in the flex container */
+  max-width: 700px; /* Constrain the width to a reasonable size */
+  margin: 0 auto; /* Center the main panel horizontally */
 }
 
 .response-container {
-  margin-top: 20px;
+  position: relative;
+  margin-top: 30px;
 }
 
 .response-container h3 {
@@ -20,11 +101,23 @@
   border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.9);
   color: #404155;
-  font-size: 16px;
+  font-size: 17px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   white-space: pre-wrap;
   overflow-y: auto;
   max-height: 500px;
+}
+
+.editable-email {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  color: #404155;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  resize: none;
 }
 
 .submit-button {
@@ -40,6 +133,136 @@
   transition: background-color 0.3s ease;
 }
 
+.copy-button:hover,
 .submit-button:hover {
   background-color: #22222b;
+}
+
+.edit-toggle-button {
+  position: absolute; /* Position relative to .response-container */
+  top: 10px;
+  right: 10px;
+  width: 11%;
+  padding: 10px 0;
+  background-color: #59585b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px; 
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-toggle-button:hover {
+  background-color: #22222b;
+}
+
+.email-icons {
+  margin-top: 20px;
+  display: flex;
+  padding-bottom: 40px; /* Add padding at the bottom */
+  justify-content: center; /* Center elements horizontally */
+  align-items: center; /* Center elements vertically */
+  gap: 15px;
+}
+
+.email-icon {
+  font-size: 24px;
+  color: #404155;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.email-icon:hover {
+  color: #22222b;
+}
+
+.email-form {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.copy-button {
+  padding: 10px;
+  background-color: #59585b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px; 
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's above everything */
+}
+
+.modal {
+  position: relative; /* Ensure child elements (like the close button) are positioned relative to this container */
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  max-height: 80vh; /* Restrict modal height to 80% of the viewport */
+  overflow-y: auto; /* Enable scrolling for overflowing content */
+  z-index: 1010;
+}
+
+/* Modal close button */
+.close-button {
+  position: absolute; /* Position relative to the modal container */
+  top: 10px; /* Distance from the top of the modal */
+  right: 10px; /* Distance from the right of the modal */
+  background-color: transparent; /* Transparent background */
+  border: none; /* No border */
+  font-size: 20px; /* Font size for the "X" or icon */
+  cursor: pointer; /* Pointer cursor on hover */
+  color: #555; /* Button color */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+/* Hover effect for close button */
+.close-button:hover {
+  color: #000000; /* Change color on hover */
+}
+
+/* Style for each history item */
+.history-item {
+  padding: 10px;
+  border-bottom: 1px solid #ddd; /* Add a separator between items */
+  cursor: pointer; /* Change cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth transition on hover */
+}
+
+/* Hover effect */
+.history-item:hover {
+  background-color: #f5f5f5; /* Light gray background on hover */
+}
+
+/* Optional: Active state */
+.history-item:active {
+  background-color: #e0e0e0; /* Slightly darker background on click */
 }

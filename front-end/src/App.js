@@ -5,7 +5,7 @@ import EmailForm from "./components/EmailForm"; // Import EmailForm component
 
 const App = () => {
   // Track if user is logged in
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   // Function to handle the login action
   const handleLogin = () => {
