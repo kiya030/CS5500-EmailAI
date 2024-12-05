@@ -77,3 +77,23 @@ select:focus {
 .submit-button:hover {
   background-color: #22222b;
 }
+
+/* Styles for the signup link */
+.signup-redirect {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.signup-link {
+  color: #007bff;
+  /* Bootstrap blue color for links */
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.signup-link:hover {
+  color: #0056b3;
+  /* Darker blue on hover */
+}

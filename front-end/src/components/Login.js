@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 import '../styles/Common.css';
 
 const Login = ({ onLogin }) => {
@@ -6,21 +7,18 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // Initialize useNavigate for navigation
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    const apiEndpoint = 'http://127.0.0.1:8000/login';
 
-    // Format the payload as application/x-www-form-urlencoded
-    const payload = new URLSearchParams();
-    payload.append('username', username);
-    payload.append('password', password);
+    const apiEndpoint = 'http://127.0.0.1:8000/login';
 
     fetch(apiEndpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: payload, // Send the payload in the correct format
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, // Required for OAuth2PasswordRequestForm
+      body: new URLSearchParams({ username, password }), // Proper formatting for form data
     })
       .then((res) => {
         if (!res.ok) {
@@ -30,17 +28,23 @@ const Login = ({ onLogin }) => {
       })
       .then((data) => {
         if (data.access_token) {
-          localStorage.setItem('accessToken', data.access_token);
-          onLogin();
+          localStorage.setItem('accessToken', data.access_token); // Save the token
+          onLogin(); // Trigger parent state change
+          navigate('/email-form'); // Redirect to Email Form page
         } else {
           setResponse(data.message || 'Login failed.');
         }
         setIsLoading(false);
       })
       .catch((error) => {
-        setResponse(error.message || 'An error occurred.');
+        setResponse('An error occurred. Please try again.');
+        console.error(error);
         setIsLoading(false);
       });
+  };
+
+  const handleSignUpRedirect = () => {
+    navigate('/signup'); // Redirect to the signup page
   };
 
   return (
@@ -66,6 +70,14 @@ const Login = ({ onLogin }) => {
         </button>
         {response && <div className="response-container">{response}</div>}
       </form>
+      <div className="signup-redirect">
+        <p>
+          Don't have an account?{' '}
+          <span className="signup-link" onClick={handleSignUpRedirect}>
+            Sign Up
+          </span>
+        </p>
+      </div>
     </div>
   );
 };
