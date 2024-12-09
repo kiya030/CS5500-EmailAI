@@ -202,17 +202,20 @@ def generate_email(request: EmailRequest, current_user: User = Depends(get_curre
     
     english_output = generate_english_from_multilingual(request.subject)
     email_body = generate_formal_email_from_english(english_output, request.tone)
-    index = email_body.index("Subject:") # starting index of the text
-    email_body = email_body[index:]
-
-    # Save email history in database
-    email_entry = EmailHistory(
-        user_id = current_user.id,
-        prompt = request.subject,
-        generated_email = email_body,
-    )
-    db.add(email_entry)
-    db.commit()
+    try:
+        index = email_body.index("Subject:") # starting index of the text
+        email_body = email_body[index:]
+        # Save email history in database
+        email_entry = EmailHistory(
+            user_id = current_user.id,
+            prompt = request.subject,
+            generated_email = email_body,
+        )
+        db.add(email_entry)
+        db.commit()
+    except ValueError:
+        # If "Subject:" is not found, handle the case (no database save)
+        email_body = "Subject not found in the generated email. Please re-enter your email content with a valid subject."
 
     return {"subject": request.subject, "tone": request.tone, "email_body": email_body}
 
