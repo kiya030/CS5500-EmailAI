@@ -20,7 +20,7 @@ const EmailForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
-  const token = localStorage.getItem('accessToken'); // Retrieve the token stored during login
+  const token = localStorage.getItem('token'); // Retrieve the token stored during login
 
   // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJraXlhIiwiZXhwIjoxNzMzODIwMTEwfQ.r9woDuK0jIFNnHQ7eV55gvdDWHCc1PCmTzTT4rt-9Rw";
 
@@ -260,6 +260,7 @@ const EmailForm = () => {
               </div>
             )}
 
+          
             <button
               className="edit-toggle-button"
               onClick={() => {
