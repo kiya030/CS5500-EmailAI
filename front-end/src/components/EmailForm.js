@@ -260,7 +260,6 @@ const EmailForm = () => {
               </div>
             )}
 
-          
             <button
               className="edit-toggle-button"
               onClick={() => {
