@@ -4,10 +4,58 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
 
+@font-face {
+  font-family: 'Avenir LT Pro';
+  src: url('../fonts/AvenirLTProLight.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Avenir LT Pro';
+  src: url('../fonts/AvenirLTProMediumOblique.otf') format('opentype');
+  font-weight: bold;
+  font-style: oblique;
+}
+
+body {
+  font-family: 'Avenir LT Pro', sans-serif;
+  font-weight: normal; /* Default: normal weight */
+}
+
+p {
+  font-size: 18px; /* Increase font size from default 16px */
+  margin-block-start: 1.2em; /* Slightly increase the top margin */
+  margin-block-end: 1.2em; /* Slightly increase the bottom margin */
+  line-height: 1.6; /* Adjust line height for better readability */
+}
+
+
+h1, h2, h3, .bold-text {
+  font-weight: bold; /* Applies Avenir LT Pro 65 Medium Oblique */
+}
+
 h1 {
-  font-family: 'Playfair Display', serif;
+  /* font-family: 'Playfair Display', serif; */
   margin-bottom: 20px; 
   color: #000000;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  font-family: "Avenir LT Pro", sans-serif;
+}
+
+[class*="-button"] {
+  font-family: "Avenir LT Pro", sans-serif;
 }
 
 .email-body {
@@ -36,7 +84,7 @@ h1 {
 }
 
 .side-panel h3 {
-  font-family: 'Playfair Display', serif;
+  /*font-family: 'Playfair Display', serif; */
   font-size: 1.5em;
   margin-bottom: 15px;
   text-align: center;
@@ -105,7 +153,7 @@ h1 {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
   white-space: pre-wrap;
   overflow-y: auto;
-  max-height: 500px;
+  max-height: 600px;
 }
 
 .editable-email {
@@ -184,6 +232,17 @@ h1 {
   border-radius: 8px;
   padding: 25px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.response-toolbar {
+  position: sticky; /* Makes it fixed but scrolls with the container */
+  top: 0; /* Sticks the toolbar to the top of its container */
+  display: flex; /* Aligns the buttons in a row */
+  justify-content: flex-end; /* Aligns the buttons to the right */
+  background-color: #fff; /* Matches the container's background */
+  padding: 10px; /* Adds spacing around the toolbar */
+  border-bottom: 1px solid #ddd; /* Optional: adds a subtle separator */
+  z-index: 10; /* Ensures it appears above the content */
 }
 
 .copy-button {

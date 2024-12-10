@@ -13,16 +13,16 @@ const EmailForm = () => {
   const [generateResponse, setGenerateResponse] = useState(""); // For generate email
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generated, setGenerated] = useState(false);
   const [history, setHistory] = useState([]); // Stores email history
   const [isEditing, setIsEditing] = useState(false); // Controls editing state
   const [editedEmail, setEditedEmail] = useState(''); // Holds the edited email content
   const [showModal, setShowModal] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
-  
-  // const token = localStorage.getItem('token'); // Retrieve the token stored during login
+  const token = localStorage.getItem('token'); // Retrieve the token stored during login
 
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJraXlhIiwiZXhwIjoxNzMzMjUwNjU4fQ.6rcBl14sWp1TKECPFo0sU1a3QrXOjihWLCBoNhZ3o8o";
+  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJraXlhIiwiZXhwIjoxNzMzODIwMTEwfQ.r9woDuK0jIFNnHQ7eV55gvdDWHCc1PCmTzTT4rt-9Rw";
 
   const copyToClipboard = () => {
     if (generateResponse) {
@@ -38,7 +38,6 @@ const EmailForm = () => {
       setIsLoading(true);
       try {
         // const token = localStorage.getItem("token"); // Retrieve the JWT token from localStorage (or any other storage mechanism)
-        console.log("Token:", token);
         const response = await fetch("http://127.0.0.1:8000/email-history", {
           method: "GET",
           headers: {
@@ -49,7 +48,9 @@ const EmailForm = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setHistory(data); // Update the history state
+          // Sort the history data by timestamp (newest first)
+          const sortedData = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          setHistory(sortedData); // Update the history state
         } else if (response.status === 401) {
           // setResponse("Your session has expired. Please log in again.");
           // localStorage.removeItem("token");
@@ -97,10 +98,11 @@ const EmailForm = () => {
         setEditedEmail(data.email_body); // Initialize the edited email
         setIsGenerating(false);
         setRefreshHistory((prev) => !prev); // Trigger history fetch
+        setGenerated(true);
       })
       .catch((error) => {
         console.error("API error:", error);
-        setGenerateResponse("An error occurred. Please try again.");
+        setGenerateResponse("🚀 Model is warming up! Please retry in a few seconds.");
         setIsGenerating(false);
       });
   };
@@ -150,7 +152,10 @@ const EmailForm = () => {
         <h3>Email History</h3>
         {isLoading && <p>Loading...</p>}
         {!isLoading && !historyResponse && history.length === 0 && (
-          <p>No email history found. Start generating emails!</p>
+          <p>
+            🧐 No email history found! <br />
+            🌟 Start generating your first email now!
+          </p>
         )}
         {!isLoading && !historyResponse && history.length > 0 && (
           <ul>
@@ -224,7 +229,11 @@ const EmailForm = () => {
           </div>
 
           <button type="submit" className="submit-button" disabled={isLoading}>
-            {isGenerating ? 'Generating...' : 'Generate'}
+            {isGenerating
+              ? 'Generating...'
+              : generated
+              ? 'Regenerate'
+              : 'Generate'}
           </button>
         </form>
 
@@ -251,6 +260,7 @@ const EmailForm = () => {
               </div>
             )}
 
+          
             <button
               className="edit-toggle-button"
               onClick={() => {
@@ -262,7 +272,7 @@ const EmailForm = () => {
             >
               {isEditing ? 'Save' : 'Edit'}
             </button>
-
+   
             {/* Email Service Icons */}
             <div className="email-icons">
               <FaGoogle
