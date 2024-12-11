@@ -373,6 +373,13 @@ def protected_route(current_user: User = Depends(get_current_user)):
     """
     return {"message": f"Hello, {current_user.username}! You have access to this protected route."}
 
+@app.get("/current-user")
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """
+    Endpoint to retrieve the current user's username.
+    """
+    return {"username": current_user.username}
+
 # Run the server
 if __name__ == "__main__":
     import uvicorn

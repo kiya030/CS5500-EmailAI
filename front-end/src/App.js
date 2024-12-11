@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup'; // Import the Signup component
@@ -9,6 +9,14 @@ import './styles/Common.css';
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate(); // Hook for navigation
+
+  // Check for token on page load
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -34,7 +42,13 @@ const App = () => {
         <Route path="/signup" element={<Signup onSignupSuccess={handleSignupSuccess} />} />
         <Route
           path="/email-form"
-          element={isLoggedIn ? <EmailForm /> : <Navigate to="/login" replace />}
+          element={
+            isLoggedIn ? (
+              <EmailForm username="YourUsername" handleLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
         <Route
           path="/protected"
