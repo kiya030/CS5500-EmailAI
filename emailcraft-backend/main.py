@@ -11,6 +11,7 @@ from models import User, EmailHistory
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import random
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -84,10 +85,22 @@ def generate_english_from_multilingual(text):
 # Function to reformat English text into a formal email based on tone
 def generate_formal_email_from_english(text, tone):
     HF_GENERATE_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
-    prompt = f"Please reformat the following text as a {tone} tone English email: {text}"
+    variations = [
+    f"Please write a {tone} tone email based on this: {text}",
+    f"Could you reformat this text into a {tone} email? {text}",
+    f"Generate a {tone} email for this: {text}"]
+
+    #prompt = f"Please reformat the following text as a {tone} tone English email: {text}"
+    prompt = random.choice(variations)
+
+    # Randomize temperature between 0.6 and 0.9
+    temperature = random.uniform(0.2, 0.9)  # Random value between 0.6 and 0.9
     payload = {
         "inputs": prompt,
-        "parameters": {"max_new_tokens": 1024}  # Adjust as needed  (token limit)
+        "parameters": {"max_new_tokens": 1024},  # Adjust as needed  (token limit)
+        "temperature": 0.9,  # Use randomized temperature
+        "top_p": 1,  # Optional: Adjust for diversity
+        "top_k": 150,  # Optional: Limit potential next tokens
     }
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
