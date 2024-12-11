@@ -120,7 +120,15 @@ const EmailForm = ({ handleLogout }) => {
       },
       body: JSON.stringify(requestData),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          // If the response status is not OK (e.g., 503), throw an error
+          return res.json().then((error) => {
+            throw new Error(JSON.stringify(error)); // Pass the error to the catch block
+          });
+        }
+        return res.json(); // Otherwise, process the response as usual
+      })
       .then((data) => {
         console.log("API response:", data);
         setGenerateResponse(data.email_body); // Display generated email or fallback message
@@ -131,7 +139,33 @@ const EmailForm = ({ handleLogout }) => {
       })
       .catch((error) => {
         console.error("API error:", error);
-        setGenerateResponse("🚀 Model is warming up! Please retry in a few seconds.");
+        // setGenerateResponse("🚀 Model is warming up! Please retry in a few seconds.");
+
+        // Set the fallback message for 503 or other errors
+        // Check if error contains response with detailed message
+        if (error.response && error.response.detail) {
+          const errorDetail = error.response.detail;
+
+          // Attempt to parse the detail if it's a JSON string
+          let parsedDetail;
+          try {
+            parsedDetail = JSON.parse(errorDetail);
+          } catch (e) {
+            parsedDetail = { error: errorDetail };
+          }
+
+          // Check if the model is warming up
+          if (parsedDetail.error && parsedDetail.error.includes("currently loading")) {
+            setGenerateResponse(`🚀 Model is warming up! Estimated time: ${parsedDetail.estimated_time || 'a few seconds'}. Please retry later.`);
+          } else {
+            setGenerateResponse(parsedDetail.error || "An unknown error occurred. Please try again later.");
+          }
+
+        } else {
+          // Generic fallback for other errors
+          setGenerateResponse("🚀 Model is warming up! Please retry in a few seconds.");
+        }
+        console.log("error response2: " + generateResponse);
         setIsGenerating(false);
       });
   };
