@@ -42,7 +42,13 @@ const App = () => {
         <Route path="/signup" element={<Signup onSignupSuccess={handleSignupSuccess} />} />
         <Route
           path="/email-form"
-          element={isLoggedIn ? <EmailForm /> : <Navigate to="/login" replace />}
+          element={
+            isLoggedIn ? (
+              <EmailForm username="YourUsername" handleLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
         />
         <Route
           path="/protected"

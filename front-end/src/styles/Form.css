@@ -136,6 +136,7 @@ select {
 .response-container {
   position: relative;
   margin-top: 30px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .response-container h3 {
@@ -145,15 +146,16 @@ select {
 }
 
 .response-content {
-  padding: 15px;
+  /* padding: 15px;
   border-radius: 5px;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #404155;
-  font-size: 17px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  white-space: pre-wrap;
   overflow-y: auto;
   max-height: 600px;
+ */
+
+  white-space: pre-wrap;
+  max-height: unset; /* Remove any height or overflow restrictions */
+  overflow: unset; /* Prevent scrolling in the inner container */
+  
 }
 
 .editable-email {
@@ -207,7 +209,7 @@ select {
 }
 
 .email-icons {
-  margin-top: 20px;
+  margin-top: 70px;
   display: flex;
   padding-bottom: 40px; /* Add padding at the bottom */
   justify-content: center; /* Center elements horizontally */
@@ -324,4 +326,57 @@ label {
 /* Optional: Active state */
 .history-item:active {
   background-color: #e0e0e0; /* Slightly darker background on click */
+}
+
+.username-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 10px 0;
+}
+
+.username-display {
+  cursor: pointer;
+  background-color: #e7cece; /* Light gray background */
+  color: #333; /* Dark text color */
+  padding: 8px 12px; /* Add some padding for spacing */
+  border-radius: 6px; /* Rounded corners */
+  font-size: 14px; /* Adjust font size */
+  font-weight: bold; /* Make text bold */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  z-index: 100; /* Ensure it stays on top */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Add hover effect */
+}
+
+.username-display:hover {
+  background-color: #d4bfbf; /* Slightly darker background on hover */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+}
+
+.logout-close-buttons {
+  display: flex;
+  gap: 10px; /* Add spacing between buttons */
+  margin-top: 5px; /* Space below "Logged in as" text */
+}
+
+.logout-button,
+.close-logout-button {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+  background-color: #e7cece;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 5px; /* Space between "Logged in as" and "Log Out" */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover,
+.close-logout-button:hover {
+  background-color: #d4bfbf;
 }

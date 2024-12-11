@@ -12,6 +12,9 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+# Initialize database tables
+Base.metadata.create_all(bind=engine)
+
 # Load environment variables (e.g., Hugging Face API token) from .env file
 load_dotenv()
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
@@ -199,17 +202,20 @@ def generate_email(request: EmailRequest, current_user: User = Depends(get_curre
     
     english_output = generate_english_from_multilingual(request.subject)
     email_body = generate_formal_email_from_english(english_output, request.tone)
-    index = email_body.index("Subject:") # starting index of the text
-    email_body = email_body[index:]
-
-    # Save email history in database
-    email_entry = EmailHistory(
-        user_id = current_user.id,
-        prompt = request.subject,
-        generated_email = email_body,
-    )
-    db.add(email_entry)
-    db.commit()
+    try:
+        index = email_body.index("Subject:") # starting index of the text
+        email_body = email_body[index:]
+        # Save email history in database
+        email_entry = EmailHistory(
+            user_id = current_user.id,
+            prompt = request.subject,
+            generated_email = email_body,
+        )
+        db.add(email_entry)
+        db.commit()
+    except ValueError:
+        # If "Subject:" is not found, handle the case (no database save)
+        email_body = "Subject not found in the generated email. Please re-enter your email content with a valid subject."
 
     return {"subject": request.subject, "tone": request.tone, "email_body": email_body}
 
@@ -353,6 +359,13 @@ def protected_route(current_user: User = Depends(get_current_user)):
             - If the user is not authenticated (invalid or missing token), an HTTP 401 Unauthorized error will be raised by the `get_current_user` dependency.
     """
     return {"message": f"Hello, {current_user.username}! You have access to this protected route."}
+
+@app.get("/current-user")
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    """
+    Endpoint to retrieve the current user's username.
+    """
+    return {"username": current_user.username}
 
 # Run the server
 if __name__ == "__main__":

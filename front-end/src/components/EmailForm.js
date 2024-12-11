@@ -6,7 +6,7 @@ import { FaGoogle, FaMicrosoft, FaYahoo, FaEnvelope } from 'react-icons/fa'; // 
 import '../styles/Common.css';
 import '../styles/Form.css';
 
-const EmailForm = () => {
+const EmailForm = ({ handleLogout }) => {
   const [subject, setSubject] = useState('');
   const [tone, setTone] = useState('');
   const [historyResponse, setHistoryResponse] = useState("");
@@ -20,9 +20,13 @@ const EmailForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
+  const [username, setUsername] = useState('');
+  const [showLogout, setShowLogout] = useState(false);
   const token = localStorage.getItem('accessToken'); // Retrieve the token stored during login
 
-  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJraXlhIiwiZXhwIjoxNzMzODIwMTEwfQ.r9woDuK0jIFNnHQ7eV55gvdDWHCc1PCmTzTT4rt-9Rw";
+  const toggleLogout = () => {
+    setShowLogout((prev) => !prev);
+  };
 
   const copyToClipboard = () => {
     if (generateResponse) {
@@ -31,6 +35,31 @@ const EmailForm = () => {
       });
     }
   };
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      const token = localStorage.getItem('accessToken'); // Get token from localStorage
+      try {
+        const response = await fetch('http://127.0.0.1:8000/current-user', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUsername(data.username); // Set the username in the state
+        } else {
+          console.error('Failed to fetch username');
+        }
+      } catch (error) {
+        console.error('Error fetching username:', error);
+      }
+    };
+
+    fetchUsername();
+  }, []); // Run once when the component mounts
   
   // Fetch email history from the backend
   useEffect(() => {
@@ -192,6 +221,27 @@ const EmailForm = () => {
       <div className="main-panel">
         {/* Heading */}
         <h1>Welcome to EmailCraft! Create the Perfect Email 📧 with Ease</h1>
+        
+        {username && (
+        <div className="username-container">
+          <p className="username-display" onClick={toggleLogout}>
+            Logged in as: {username}
+          </p>
+          {showLogout && (
+          <div className="logout-close-buttons">
+            <button className="logout-button" onClick={handleLogout}>
+              Log Out
+            </button>
+            <button
+              className="close-logout-button"
+              onClick={() => setShowLogout(false)} // Close buttons
+            >
+              Close
+            </button>
+          </div>
+        )}
+        </div>
+      )}
         {/* Email Form */}
         <form className="email-form" onSubmit={handleSubmit}>
           <div className="form-group">
