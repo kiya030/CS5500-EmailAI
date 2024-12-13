@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from datetime import datetime
 from database import Base  # Adjust this import based on your project structure
 
@@ -8,7 +9,9 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
+    email_address = Column(String, unique=True, index=True)  # New email field
     hashed_password = Column(String)
+    created_at = Column(DateTime, default=func.now(), nullable=False)  # Auto-set creation timestamp
     
     # Relationship with EmailHistory
     email_history = relationship("EmailHistory", back_populates="user")

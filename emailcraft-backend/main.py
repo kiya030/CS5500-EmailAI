@@ -2,7 +2,7 @@ import os
 import requests
 from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware  # Import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
@@ -11,6 +11,7 @@ from models import User, EmailHistory
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+import random
 
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
@@ -59,6 +60,7 @@ class UserRegister(BaseModel):
     username: str
     password: str
     verify_password: str
+    email_address: EmailStr
     
 # Function to interact with Hugging Face's multilingual model for translation
 def generate_english_from_multilingual(text):
@@ -84,10 +86,22 @@ def generate_english_from_multilingual(text):
 # Function to reformat English text into a formal email based on tone
 def generate_formal_email_from_english(text, tone):
     HF_GENERATE_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
-    prompt = f"Please reformat the following text as a {tone} tone English email: {text}"
+    variations = [
+    f"Please write a {tone} tone email based on this: {text}",
+    f"Could you reformat this text into a {tone} email? {text}",
+    f"Generate a {tone} email for this: {text}"]
+
+    #prompt = f"Please reformat the following text as a {tone} tone English email: {text}"
+    prompt = random.choice(variations)
+
+    # Randomize temperature between 0.6 and 0.9
+    temperature = random.uniform(0.2, 0.9)  # Random value between 0.6 and 0.9
     payload = {
         "inputs": prompt,
-        "parameters": {"max_new_tokens": 1024}  # Adjust as needed  (token limit)
+        "parameters": {"max_new_tokens": 1024},  # Adjust as needed  (token limit)
+        "temperature": 0.9,  # Use randomized temperature
+        "top_p": 1,  # Optional: Adjust for diversity
+        "top_k": 150,  # Optional: Limit potential next tokens
     }
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
@@ -203,6 +217,8 @@ def generate_email(request: EmailRequest, current_user: User = Depends(get_curre
     english_output = generate_english_from_multilingual(request.subject)
     email_body = generate_formal_email_from_english(english_output, request.tone)
     try:
+        if "\n\n---\n\n" in email_body:
+            email_body = email_body.split("\n\n---\n\n")[0]
         index = email_body.index("Subject:") # starting index of the text
         email_body = email_body[index:]
         # Save email history in database
@@ -274,6 +290,14 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
             detail="Username already registered"
         )
     
+    # Check if the email already exists
+    existing_email = db.query(User).filter(User.email_address == user.email_address).first()
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email address already registered"
+        )
+    
     # Check if passwords match (without hashing)
     if user.password != user.verify_password:
         raise HTTPException(
@@ -282,11 +306,16 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         )
     # Hash the password and create the user
     hashed_password = get_password_hash(user.password)
-    new_user = User(username=user.username, hashed_password=hashed_password)
+    new_user = User(username=user.username, hashed_password=hashed_password, email_address=user.email_address)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"message": "User registered successfully"}
+    return {
+        "message": "User registered successfully",
+        "username": new_user.username,
+        "email": new_user.email_address,
+        "created_at": new_user.created_at.strftime("%Y-%m-%d %H:%M:%S")  # Format datetime
+    }
 
 
 
@@ -366,6 +395,25 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     Endpoint to retrieve the current user's username.
     """
     return {"username": current_user.username}
+
+@app.get("/profile", status_code=status.HTTP_200_OK)
+def get_user_profile(current_user: User = Depends(get_current_user)):
+    """
+    Retrieve the profile information of the currently authenticated user.
+
+    This endpoint returns the user's username, email address, and account creation date.
+
+    Parameters:
+        current_user (User): The currently authenticated user, provided by the `get_current_user` dependency.
+
+    Returns:
+        dict: A JSON response containing the user's profile information.
+    """
+    return {
+        "username": current_user.username,
+        "email_address": current_user.email_address,
+        "created_at": current_user.created_at.strftime("%Y-%m-%d %H:%M:%S"),  # Format the date
+    }
 
 # Run the server
 if __name__ == "__main__":
