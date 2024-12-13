@@ -21,12 +21,23 @@ const EmailForm = ({ handleLogout }) => {
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [refreshHistory, setRefreshHistory] = useState(false);
   const [username, setUsername] = useState('');
-  const [showLogout, setShowLogout] = useState(false);
+  const [email, setEmail] = useState('');
+  const [registrationDate, setRegistrationDate] = useState('');
+  const [showUserDetails, setShowUserDetails] = useState(false); // To toggle the dropdown
   const token = localStorage.getItem('accessToken'); // Retrieve the token stored during login
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
 
-  const toggleLogout = () => {
-    setShowLogout((prev) => !prev);
+  const toggleUserDetails = () => {
+    setShowUserDetails((prev) => !prev);
   };
+
+  const handleShowUserDetailsModal = () => {
+    setShowUserDetailsModal(true); // Show the user details modal
+  };
+  
+  const handleCloseUserDetailsModal = () => {
+    setShowUserDetailsModal(false); // Hide the user details modal
+  };  
 
   const copyToClipboard = () => {
     if (generateResponse) {
@@ -37,10 +48,10 @@ const EmailForm = ({ handleLogout }) => {
   };
 
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchUserDetails = async () => {
       const token = localStorage.getItem('accessToken'); // Get token from localStorage
       try {
-        const response = await fetch('http://127.0.0.1:8000/current-user', {
+        const response = await fetch('http://127.0.0.1:8000/profile', {
           headers: {
             Authorization: `Bearer ${token}`, // Include the token
             'Content-Type': 'application/json',
@@ -49,17 +60,19 @@ const EmailForm = ({ handleLogout }) => {
 
         if (response.ok) {
           const data = await response.json();
-          setUsername(data.username); // Set the username in the state
+          setUsername(data.username);
+          setEmail(data.email_address); // Assuming email is part of the response
+          setRegistrationDate(data.registration_date); // Assuming registration_date is part of the response
         } else {
-          console.error('Failed to fetch username');
+          console.error('Failed to fetch user details');
         }
       } catch (error) {
-        console.error('Error fetching username:', error);
+        console.error('Error fetching user details:', error);
       }
     };
 
-    fetchUsername();
-  }, []); // Run once when the component mounts
+    fetchUserDetails();
+  }, [token]); // Run once when the component mounts
   
   // Fetch email history from the backend
   useEffect(() => {
@@ -258,24 +271,35 @@ const EmailForm = ({ handleLogout }) => {
         
         {username && (
         <div className="username-container">
-          <p className="username-display" onClick={toggleLogout}>
-            Logged in as: {username}
+          <p className="username-display">
+            <span className="username-link" onClick={handleShowUserDetailsModal}>
+            👤 {username}
+            </span>{' '}
+            |{' '}
+            <span className="logout-link" onClick={handleShowUserDetailsModal}>
+              Logout 👋🏻
+            </span>
           </p>
-          {showLogout && (
-          <div className="logout-close-buttons">
-            <button className="logout-button" onClick={handleLogout}>
-              Log Out
-            </button>
-            <button
-              className="close-logout-button"
-              onClick={() => setShowLogout(false)} // Close buttons
-            >
-              Close
-            </button>
-          </div>
-        )}
         </div>
       )}
+
+      {/* Modal */}
+      {showUserDetailsModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button className="close-button" onClick={handleCloseUserDetailsModal}>
+              ✖
+            </button>
+            <div className="modal-content">
+              <h2>User Profile</h2>
+              <p><strong>Username:</strong> {username}</p>
+              <p><strong>Email:</strong> {email}</p>
+              <p><strong>Joined:</strong> {registrationDate}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
         {/* Email Form */}
         <form className="email-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -335,54 +359,59 @@ const EmailForm = ({ handleLogout }) => {
               <div className="response-content">
                 <h3>Generated Email:</h3>
                 <p>{generateResponse}</p>
+              </div>
+            )}
+                
+            {generateResponse !== "🚀 Model is warming up! Please retry in a few seconds." && (
+              <>  
                 <div className="response-actions">
                   {/* Copy to Clipboard Button */}
                   <button onClick={copyToClipboard} className="copy-button">
                     Copy
                   </button>
+              
+                  <button
+                    className="edit-toggle-button"
+                    onClick={() => {
+                      setIsEditing(!isEditing);
+                      if (isEditing) {
+                        setGenerateResponse(editedEmail); // Remove original email from display after editing
+                      }
+                    }}
+                  >
+                    {isEditing ? 'Save' : 'Edit'}
+                  </button>
+        
+                  {/* Email Service Icons */}
+                  <div className="email-icons">
+                    <FaGoogle
+                      className="email-icon"
+                      onClick={() => handleRedirect('gmail')}
+                      title="Gmail"
+                      style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
+                    />
+                    <FaMicrosoft
+                      className="email-icon"
+                      onClick={() => handleRedirect('outlook')}
+                      title="Outlook"
+                      style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
+                    />
+                    <FaYahoo
+                      className="email-icon"
+                      onClick={() => handleRedirect('yahoo')}
+                      title="Yahoo Mail"
+                      style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
+                    />
+                    <FaEnvelope
+                      className="email-icon"
+                      onClick={() => handleRedirect('default')}
+                      title="Default Email Client"
+                      style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-
-            <button
-              className="edit-toggle-button"
-              onClick={() => {
-                setIsEditing(!isEditing);
-                if (isEditing) {
-                  setGenerateResponse(editedEmail); // Remove original email from display after editing
-                }
-              }}
-            >
-              {isEditing ? 'Save' : 'Edit'}
-            </button>
-   
-            {/* Email Service Icons */}
-            <div className="email-icons">
-              <FaGoogle
-                className="email-icon"
-                onClick={() => handleRedirect('gmail')}
-                title="Gmail"
-                style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
-              />
-              <FaMicrosoft
-                className="email-icon"
-                onClick={() => handleRedirect('outlook')}
-                title="Outlook"
-                style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
-              />
-              <FaYahoo
-                className="email-icon"
-                onClick={() => handleRedirect('yahoo')}
-                title="Yahoo Mail"
-                style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
-              />
-              <FaEnvelope
-                className="email-icon"
-                onClick={() => handleRedirect('default')}
-                title="Default Email Client"
-                style={{ cursor: 'pointer', margin: '0 10px', fontSize: '24px' }}
-              />
-            </div>
+              </>
+            )} 
           </div>
         )}
       </div>

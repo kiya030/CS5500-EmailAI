@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate for naviga
 import '../styles/Common.css';
 
 const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [response, setResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ const Login = ({ onLogin }) => {
     fetch(apiEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, // Required for OAuth2PasswordRequestForm
-      body: new URLSearchParams({ username, password }), // Proper formatting for form data
+      body: new URLSearchParams({ username: email, password }), // Proper formatting for form data
     })
       .then((res) => {
         if (!res.ok) {
@@ -53,9 +53,9 @@ const Login = ({ onLogin }) => {
         <h2>Login</h2>
         <input
           type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
         />
         <input

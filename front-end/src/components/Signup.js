@@ -3,6 +3,7 @@ import '../styles/Common.css';
 
 const Signup = ({ onSignupSuccess }) => {
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [verifyPassword, setVerifyPassword] = useState('');
     const [response, setResponse] = useState(null);
@@ -22,6 +23,7 @@ const Signup = ({ onSignupSuccess }) => {
                 username,
                 password,
                 verify_password: verifyPassword, // Match the backend's field name
+                email_address: email,
             }),
         })
             .then((res) => res.json())
@@ -49,6 +51,13 @@ const Signup = ({ onSignupSuccess }) => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Username"
+                    required
+                />
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)} // New email input
+                    placeholder="Email"
                     required
                 />
                 <input

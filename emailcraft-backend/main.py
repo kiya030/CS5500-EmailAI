@@ -322,20 +322,20 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
-    This endpoint allows a user to log in by providing their username and password. 
+    This endpoint allows a user to log in by providing their email and password.
     It checks the provided credentials, and if they are correct, returns a JWT token.
 
     Steps:
-    1. Retrieve the user from the database by their username.
+    1. Retrieve the user from the database by their email.
        - If no user is found or the password doesn't match the stored hashed password, 
-         an HTTP 401 error is raised with the message "Incorrect username or password".
+         an HTTP 401 error is raised with the message "Incorrect email or password".
     2. If credentials are valid, generate a JWT (JSON Web Token) for the user.
        - The token contains the username as the subject ("sub") and is valid for a specific duration 
          (defined by `ACCESS_TOKEN_EXPIRE_MINUTES`).
     3. Return the generated JWT token and the token type ("bearer") in the response.
 
     Parameters:
-        form_data (OAuth2PasswordRequestForm): The form data containing the username and password provided by the user.
+        form_data (OAuth2PasswordRequestForm): The form data containing the email and password provided by the user.
         db (Session): The database session used to query the user data.
 
     Returns:
@@ -347,12 +347,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         HTTPException: 
             - If the username does not exist or the password is incorrect, an HTTP 401 Unauthorized error is raised.
     """
-    # Retrieve the user from the database by username
-    user = db.query(User).filter(User.username == form_data.username).first()
+    # Retrieve the user from the database by email
+    user = db.query(User).filter(User.email_address == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
+            detail="Incorrect email or password"
         )
     
     # Generate a JWT token for the user
@@ -389,13 +389,6 @@ def protected_route(current_user: User = Depends(get_current_user)):
     """
     return {"message": f"Hello, {current_user.username}! You have access to this protected route."}
 
-@app.get("/current-user")
-def get_current_user_info(current_user: User = Depends(get_current_user)):
-    """
-    Endpoint to retrieve the current user's username.
-    """
-    return {"username": current_user.username}
-
 @app.get("/profile", status_code=status.HTTP_200_OK)
 def get_user_profile(current_user: User = Depends(get_current_user)):
     """
@@ -412,7 +405,7 @@ def get_user_profile(current_user: User = Depends(get_current_user)):
     return {
         "username": current_user.username,
         "email_address": current_user.email_address,
-        "created_at": current_user.created_at.strftime("%Y-%m-%d %H:%M:%S"),  # Format the date
+        "registration_date": current_user.created_at.strftime("%Y-%m-%d"),
     }
 
 # Run the server
